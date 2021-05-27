@@ -7,6 +7,7 @@
 #include <Arduino.h>
 
 unsigned int can_values[100];
+bool canReady = 0;
 // hi
 int can_setup(){
 
@@ -14,7 +15,7 @@ int can_setup(){
   // Return 1 if success 0 if fail
   int result = mcp2515_init(0);
   delay(1000);
-  attachInterrupt(digitalPinToInterrupt(2), can_getvalue, FALLING);
+  attachInterrupt(digitalPinToInterrupt(2), can_setready, FALLING);
   for (int i = 0; i < 100; i++) {
 	  can_values[i]=0;
   }
@@ -27,7 +28,7 @@ unsigned int _combined_data(uint8_t data[], size_t firstIndex)
 }
 
 void can_getvalue() {
- 
+	canReady = 0;
     // Read Message
     tCAN r_message;
       if (mcp2515_get_message(&r_message)) 
@@ -76,4 +77,12 @@ void can_getvalue() {
 
 unsigned int can_read(unsigned int addr) {
 	return can_values[addr];
+}
+
+void can_setready() {
+	canReady = 1;
+}
+
+bool can_ready() {
+	return canReady;
 }

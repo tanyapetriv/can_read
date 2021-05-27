@@ -13,5 +13,6 @@
 int can_setup();
 unsigned int can_read(unsigned int adr);
 void can_getvalue();
-
+void can_setready();
+bool can_ready();
 #endif
