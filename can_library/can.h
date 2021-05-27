@@ -8,9 +8,10 @@
 #include <defaults.h>
 #include <Arduino.h>
 
-
+//unsigned int can_values[100];
 
 int can_setup();
 unsigned int can_read(unsigned int adr);
+void can_getvalue();
 
 #endif
