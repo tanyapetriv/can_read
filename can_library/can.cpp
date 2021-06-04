@@ -17,7 +17,7 @@ int can_setup(){
   delay(1000);
   attachInterrupt(digitalPinToInterrupt(2), can_setready, FALLING);
   for (int i = 0; i < 100; i++) {
-	  can_values[i]=0;
+	  can_values[i]=420;
   }
   return result;
 }
@@ -28,7 +28,7 @@ unsigned int _combined_data(uint8_t data[], size_t firstIndex)
 }
 
 void can_getvalue() {
-	canReady = 0;
+ 
     // Read Message
     tCAN r_message;
       if (mcp2515_get_message(&r_message)) 
@@ -37,40 +37,49 @@ void can_getvalue() {
         { 
           case 0x65D: // brake temp front left, front right, rear left, rear right
             // brake temp front left
-            can_values[2] = _combined_data(r_message.data, 0);
-			can_values[3] = _combined_data(r_message.data, 2);
-			can_values[4] = _combined_data(r_message.data, 4);
-			can_values[5] = _combined_data(r_message.data, 6);
+            can_values[ADDR_BRAKE_TEMP_FRONT_LEFT] = _combined_data(r_message.data, 0);
+			can_values[ADDR_BRAKE_TEMP_FRONT_RIGHT] = _combined_data(r_message.data, 2);
+			can_values[ADDR_BRAKE_TEMP_REAR_LEFT] = _combined_data(r_message.data, 4);
+			can_values[ADDR_BRAKE_TEMP_REAR_RIGHT] = _combined_data(r_message.data, 6);
 			
           case 0x655: // brake pressure front, brake pressure rear, coolant pressure, power steering pressure           
-            can_values[0] = _combined_data(r_message.data, 2);
-			can_values[1] = _combined_data(r_message.data, 0);
+            can_values[ADDR_BRAKE_PRESSURE_REAR] = _combined_data(r_message.data, 2);
+			can_values[ADDR_BRAKE_PRESSURE_FRONT] = _combined_data(r_message.data, 0);
 
           case 0x648: // wheel speed front left, front right, back left, back right
-			can_values[10] = _combined_data(r_message.data, 0);
-			can_values[11] = _combined_data(r_message.data, 2);
-			can_values[12] = _combined_data(r_message.data, 4);
-			can_values[13] = _combined_data(r_message.data, 6);
+			can_values[ADDR_WHEEL_SPEED_FRONT_LEFT] = _combined_data(r_message.data, 0);
+			can_values[ADDR_WHEEL_SPEED_FRONT_RIGHT] = _combined_data(r_message.data, 2);
+			can_values[ADDR_WHEEL_SPEED_REAR_LEFT] = _combined_data(r_message.data, 4);
+			can_values[ADDR_WHEEL_SPEED_REAR_RIGHT] = _combined_data(r_message.data, 6);
             
           case 0x640: // engine speed, throttle position, manifold air pressure, manifold air temperature
             // engine speed
-			can_values[50] = _combined_data(r_message.data, 0);
-			can_values[51] = _combined_data(r_message.data, 2);
-			can_values[52] = _combined_data(r_message.data, 4);
-			can_values[31] = _combined_data(r_message.data, 6);
+			unsigned int RPM = _combined_data(r_message.data, 0);
+			can_values[ADDR_ENGINE_SPEED] = (RPM != 0 && (RPM > 530 || RPM < 500))?RPM:can_values[50];
+			can_values[ADDR_MANIFOLD_AIR_PRESSURE] = _combined_data(r_message.data, 2);
+			can_values[ADDR_MANIFOLD_AIR_TEMP] = _combined_data(r_message.data, 4);
+			can_values[ADDR_THROTTLE_POSITION] = _combined_data(r_message.data, 6);
+			
+		  case 0x641:
+			can_values[ADDR_LAMBDA1] = _combined_data(r_message.data, 2);
 
           case 0x649: 
-			can_values[21] = r_message.data[1];
-			can_values[53] = r_message.data[0];
+			can_values[ADDR_ENGINE_OIL_TEMP] = r_message.data[1] + 40;
+			can_values[ADDR_COOLANT_TEMP] = r_message.data[0] + 40;
+		  case 0x110:
+			int batV = r_message.data[6];
+			can_values[ADDR_BAT_V] = (batV == 0)?can_values[ADDR_BAT_V]:batV;
 
           case 0x644:
-			can_values[20] = _combined_data(r_message.data, 6);
+			can_values[ADDR_OIL_PRESSURE] = _combined_data(r_message.data, 6);
     
           case 0x64E: 
-			can_values[30] = r_message.data[4] & 128; // deci number for 1000 0000
+			can_values[ADDR_NEUTRAL_GEAR_SWITCH] = r_message.data[4] & 128; // deci number for 1000 0000
             
           case 0x64D:
-			can_values[30] = r_message.data[4] & 0b00001111;
+			can_values[ADDR_GEAR] = r_message.data[4] & 0b00001111;
+		  case 0x631:
+			can_values[ADDR_CAR_STATUS_BIT] = r_message.data[0];
         }
       }
 }
