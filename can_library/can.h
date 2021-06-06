@@ -46,7 +46,7 @@
 #define ADDR_CAR_STATUS_BIT 54
 
 int can_setup();
-unsigned int can_read(unsigned int adr);
+float can_read(unsigned int adr);
 void can_getvalue();
 void can_setready();
 bool can_ready();
