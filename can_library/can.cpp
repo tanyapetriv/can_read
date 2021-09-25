@@ -55,7 +55,7 @@ void can_getvalue() {
           case 0x640: // engine speed, throttle position, manifold air pressure, manifold air temperature
             // engine speed
 			unsigned int RPM = _combined_data(r_message.data, 0);
-			can_values[ADDR_ENGINE_SPEED] = (RPM != 0 && (RPM > 530 || RPM < 500))?RPM:can_values[50];//units: RPM
+			can_values[ADDR_ENGINE_SPEED] = (RPM != 0 && (RPM > 530 || RPM < 500))?RPM:can_values[ADDR_ENGINE_SPEED];//units: RPM
 			can_values[ADDR_MANIFOLD_AIR_PRESSURE] = (float)_combined_data(r_message.data, 2)/10.0; //units: kPa
 			can_values[ADDR_MANIFOLD_AIR_TEMP] = (float)_combined_data(r_message.data, 4)/10.0;//units: degrees C
 			can_values[ADDR_THROTTLE_POSITION] = (float)_combined_data(r_message.data, 6)/10.0;//units: percent
